@@ -1,5 +1,6 @@
 package com.larregle.facedetection.gui;
 
+import com.larregle.facedetection.detector.FaceDetector;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -7,11 +8,14 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.List;
 
 
 public class MainApplication extends Application {
@@ -25,6 +29,7 @@ public class MainApplication extends Application {
     private final FileChooser fileChooser;
 
     private ImageView imageView;
+    private File imageFile;
 
     public MainApplication() {
         borderPane = new BorderPane();
@@ -52,12 +57,11 @@ public class MainApplication extends Application {
         fileMenu.getItems().addAll(loadItem, detectItem, exitItem);
 
         loadItem.setOnAction(e -> {
-            File file;
             String path;
             try {
-                file = fileChooser.showOpenDialog(stage);
-                if (file != null) {
-                    path = file.toURI().toURL().toExternalForm();
+                imageFile = fileChooser.showOpenDialog(stage);
+                if (imageFile != null) {
+                    path = imageFile.toURI().toURL().toExternalForm();
                     Image image = new Image(path, 700, 500, false, false);
                     imageView = new ImageView();
                     imageView.setFitWidth(700);
@@ -73,7 +77,12 @@ public class MainApplication extends Application {
         });
 
         detectItem.setOnAction(e -> {
-            // TODO start detection algorithm
+            try {
+                List<Rectangle> detections = FaceDetector.getInstance().detectFaces(imageFile);
+                borderPane.getChildren().addAll(detections);
+            } catch (MalformedURLException e1) {
+                e1.printStackTrace();
+            }
         });
 
         exitItem.setOnAction(e -> {
